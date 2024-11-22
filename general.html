@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Quiz Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-top: 80px;
+            background-color: #f5f6fa;
+        }
+
+        .search-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .patterns {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .results-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .result-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .question {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .answer {
+            color: #34495e;
+        }
+
+        .no-results {
+            color: #7f8c8d;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .search-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .search-input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h1>History Quiz Search</h1>
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search answers...">
+            <button id="searchButton" class="search-button">Search</button>
+        </div>
+    </div>
+    <div class="patterns" id="patterns">
+        <h3>Common Patterns Found:</h3>
+        <!-- Patterns will be displayed here -->
+    </div>
+    <div class="results-container" id="results">
+        <!-- Results will be displayed here -->
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const resultsDiv = document.getElementById('results');
+
+        async function performSearch() {
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm.length < 2) {
+                resultsDiv.innerHTML = '<div class="no-results">Enter at least 2 characters to search</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/search?term=${encodeURIComponent(searchTerm)}`);
+                const results = await response.json();
+
+                if (results.length === 0) {
+                    resultsDiv.innerHTML = '<div class="no-results">No matches found</div>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = results.map(result => `
+                    <div class="result-item">
+                        <div class="question">${result.question}</div>
+                        <div class="answer">Answer: ${result.answer}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                resultsDiv.innerHTML = '<div class="no-results">Error searching. Please try again.</div>';
+            }
+        }
+
+        // Search on button click
+        searchButton.addEventListener('click', performSearch);
+
+        // Search on Enter key
+        searchInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>
